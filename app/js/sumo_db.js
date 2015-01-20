@@ -23,7 +23,9 @@
     return new Promise(function(resolve, reject) {
       var req = new XMLHttpRequest();
       req.open(method, url);
-      req.setRequestHeader('Content-Type', 'application/json');
+      if (data) {
+        req.setRequestHeader('Content-Type', 'application/json');
+      }
       for (var field in headers) {
         req.setRequestHeader(field, headers[field]);
       }
@@ -282,6 +284,15 @@
         }
       });
     },
+
+    get_suggestions: function(query) {
+      var endpoint = API_V2_BASE + 'search/suggest/';
+      endpoint += '?q=' + query;
+      endpoint += '&max_questions=3&max_documents=3';
+      endpoint += '&format=json';
+
+      return request(endpoint, 'GET').then(JSON.parse);
+    }
   };
   exports.SumoDB = SumoDB;
 })(window);
