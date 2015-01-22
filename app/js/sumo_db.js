@@ -7,6 +7,10 @@
   var API_V2_BASE = 'https://support.allizom.org/api/2/';
   var PRODUCT = 'firefox-os';
 
+  var in_progress_requests = {};
+  var sequence_id = 0;
+  var last_request;
+
   function get_token() {
     var endpoint = API_V1_BASE + 'users/get_token';
     var data = {
@@ -22,6 +26,7 @@
   function request(url, method, data, headers) {
     return new Promise(function(resolve, reject) {
       var req = new XMLHttpRequest();
+      last_request = req;
       req.open(method, url);
       if (data) {
         req.setRequestHeader('Content-Type', 'application/json');
@@ -32,7 +37,7 @@
 
       req.onload = function() {
         if (req.status >= 200 && req.status < 300) {
-          resolve(req.response);
+          resolve(req.responseText);
         } else {
           reject(Error(req.statusText));
         }
@@ -285,13 +290,27 @@
       });
     },
 
-    get_suggestions: function(query) {
+    get_suggestions: function(query, callback) {
       var endpoint = API_V2_BASE + 'search/suggest/';
       endpoint += '?q=' + query;
       endpoint += '&max_questions=3&max_documents=3';
       endpoint += '&format=json';
 
-      return request(endpoint, 'GET').then(JSON.parse);
+      var current_request = request(endpoint, 'GET');
+      var request_sequence = sequence_id++;
+      in_progress_requests[request_sequence] = last_request;
+      current_request.then(function(response) {
+        for (var i in in_progress_requests) {
+          if (i < request_sequence) {
+            in_progress_requests[i].abort();
+            delete in_progress_requests[i];
+          }
+        }
+        if (in_progress_requests[request_sequence]) {
+          callback(JSON.parse(response));
+          delete in_progress_requests[request_sequence];
+        }
+      });
     }
   };
   exports.SumoDB = SumoDB;
