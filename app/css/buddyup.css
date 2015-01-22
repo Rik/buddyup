@@ -21,28 +21,6 @@
     margin: 0;
     padding: .2rem 1rem;
 }
-.interaction {
-    display: inline;
-    margin: 0;
-    padding: 0 1rem;
-    list-style: none;
-}
-.interaction li {
-    display: inline-block;
-    margin-right: .7rem;
-}
-.interaction li:after {
-    margin-left: .3rem;
-}
-.last-activity {
-    float: right;
-    padding-right: 1rem;
-}
-.interaction,
-.last-activity {
-    color: #999;
-    font-size: .9rem;
-}
 .no-data {
     margin: 1rem;
 }
@@ -142,22 +120,6 @@
     background-color: #EDECEC;
     padding: .7rem .9rem;
     border-radius: 6px;
-}
-.comment-meta,
-.vote {
-    font-size: .8rem;
-}
-.comment-meta {
-    width: 60%;
-}
-.vote {
-    display: inline-block;
-    width: 25%;
-    text-align: right;
-}
-.vote:before {
-    margin-right: .3rem;
-    font-size: .8rem;
 }
 /* footer */
 footer button:hover {

@@ -7,11 +7,20 @@ output += "<div class=\"message\">\n  <p>";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "comment")),"content", env.autoesc), env.autoesc);
 output += "</p>\n  ";
 if(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "comment")),"updated", env.autoesc)) {
-output += "\n    <span class=\"comment-meta\">";
+output += "\n    <footer>\n      <span class=\"comment-meta\">";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "comment")),"created", env.autoesc), env.autoesc);
-output += " &ndash;\n      ";
+output += " &ndash; ";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "comment")),"author", env.autoesc), env.autoesc);
-output += "\n    </span>\n  ";
+output += "</span>\n      <!-- if the comment object has a question property, this is a comment and not the question\n      so we should add the voting button -->\n      ";
+if(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "comment")),"question", env.autoesc)) {
+output += "\n        <button class=\"vote\" data-icon=\"feedback\" data-id=\"";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "comment")),"id", env.autoesc), env.autoesc);
+output += "\">";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "comment")),"num_helpful_votes", env.autoesc), env.autoesc);
+output += "</button>\n      ";
+;
+}
+output += "\n    </footer>\n  ";
 ;
 }
 else {
@@ -19,6 +28,27 @@ output += "\n    <span>Sending…</span>\n  ";
 ;
 }
 output += "\n</div>\n";
+cb(null, output);
+;
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+return {
+root: root
+};
+})();
+})();
+(function() {(window.nunjucksPrecompiled = window.nunjucksPrecompiled || {})["kb_item.html"] = (function() {function root(env, context, frame, runtime, cb) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+output += "<li class=\"list-item\">\n  <a href=\"\">\n    <p class=\"li__title ellipsis\">";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "kb_item")),"title", env.autoesc), env.autoesc);
+output += "</p>\n    <div class=\"hbox\">\n      <span class=\"li__subtitle ellipsis\">";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "kb_item")),"summary", env.autoesc), env.autoesc);
+output += "</span>\n    </div>\n  </a>\n</li>\n";
 cb(null, output);
 ;
 } catch (e) {
@@ -156,17 +186,15 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-output += "<li>\n  <a href=\"question.html?id=";
+output += "<li class=\"list-item\">\n  <a href=\"question.html?id=";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "question")),"id", env.autoesc), env.autoesc);
-output += "\">";
+output += "\">\n    <p class=\"li__title ellipsis\">";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "question")),"title", env.autoesc), env.autoesc);
-output += "</a>\n  <ul class=\"interaction\">\n    <li class=\"comment-total\" data-icon-after=\"messages\">";
-output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "question")),"num_answers", env.autoesc), env.autoesc);
-output += "</li>\n    <li class=\"votes-total\" data-icon-after=\"feedback\">";
-output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "question")),"num_votes_past_week", env.autoesc), env.autoesc);
-output += "<li>\n  </ul>\n  <span class=\"last-activity\">";
+output += "</p>\n    <div class=\"hbox\">\n      <span class=\"li__subtitle fit\">";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "question")),"updated", env.autoesc), env.autoesc);
-output += "</span>\n</li>\n";
+output += "</span>\n      <span class=\"li__comments\" data-icon=\"messages\">";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "question")),"num_answers", env.autoesc), env.autoesc);
+output += "</span>\n    </div>\n  </a>\n</li>\n";
 cb(null, output);
 ;
 } catch (e) {
@@ -183,7 +211,7 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-output += "<section data-type=\"budyup-list\">\n  ";
+output += "<section>\n  ";
 if(runtime.contextOrFrameLookup(context, frame, "results")) {
 output += "\n    ";
 frame = frame.push();
@@ -203,9 +231,9 @@ frame.set("loop.revindex0", t_2 - t_1 - 1);
 frame.set("loop.first", t_1 === 0);
 frame.set("loop.last", t_1 === t_2 - 1);
 frame.set("loop.length", t_2);
-output += "\n      <header>";
+output += "\n      <h1 class=\"list-day\">";
 output += runtime.suppressValue(t_4, env.autoesc);
-output += "</header>\n      <ul>\n      ";
+output += "</h1>\n      <ul>\n      ";
 frame = frame.push();
 var t_8 = t_5;
 if(t_8) {var t_7 = t_8.length;
@@ -248,9 +276,9 @@ frame.set("loop.revindex0", t_2 - t_1 - 1);
 frame.set("loop.first", t_1 === 0);
 frame.set("loop.last", t_1 === t_2 - 1);
 frame.set("loop.length", t_2);
-output += "\n      <header>";
+output += "\n      <h1 class=\"list-day\">";
 output += runtime.suppressValue(t_14, env.autoesc);
-output += "</header>\n      <ul>\n      ";
+output += "</h1>\n      <ul>\n      ";
 frame = frame.push();
 var t_18 = t_15;
 if(t_18) {var t_17 = t_18.length;
