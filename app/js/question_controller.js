@@ -1,6 +1,6 @@
 'use strict';
 
-/* global asyncStorage, SumoDB, Utils, User, nunjucks */
+/* global _, asyncStorage, SumoDB, Utils, User, nunjucks */
 
 (function(exports) {
   var question_thread;
@@ -247,7 +247,7 @@
       return;
     }
 
-    SumoDB.get_suggestions(evt.target.value).then(function(response) {
+    SumoDB.get_suggestions(evt.target.value, function(response) {
       if (response.questions.length + response.documents.length === 0) {
         show_panel(thread_introduction);
         return;
@@ -273,7 +273,8 @@
     init: function() {
       question_field = document.getElementById('question_field');
       question_field.addEventListener('input', take_question);
-      question_field.addEventListener('input', give_suggetions);
+      question_field.addEventListener('input',
+        _.throttle(give_suggetions, 500, {leading: false}));
 
       var form = document.getElementById('question_form');
       form.addEventListener('submit', submit_comment);
