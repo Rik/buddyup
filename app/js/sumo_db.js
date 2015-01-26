@@ -1,11 +1,15 @@
 'use strict';
 
-/* global User */
+/* global Settings, User */
 
 (function(exports) {
-  var API_V1_BASE = 'https://support.allizom.org/api/1/';
-  var API_V2_BASE = 'https://support.allizom.org/api/2/';
+  var API_V1_BASE = Settings.BASE_SERVER + '/api/1/';
+  var API_V2_BASE = Settings.BASE_SERVER + '/api/2/';
   var PRODUCT = 'firefox-os';
+
+  var in_progress_requests = {};
+  var sequence_id = 0;
+  var last_request;
 
   function get_token() {
     var endpoint = API_V1_BASE + 'users/get_token';
@@ -22,15 +26,18 @@
   function request(url, method, data, headers) {
     return new Promise(function(resolve, reject) {
       var req = new XMLHttpRequest();
+      last_request = req;
       req.open(method, url);
-      req.setRequestHeader('Content-Type', 'application/json');
+      if (data) {
+        req.setRequestHeader('Content-Type', 'application/json');
+      }
       for (var field in headers) {
         req.setRequestHeader(field, headers[field]);
       }
 
       req.onload = function() {
         if (req.status >= 200 && req.status < 300) {
-          resolve(req.response);
+          resolve(req.responseText);
         } else {
           reject(Error(req.statusText));
         }
@@ -77,7 +84,7 @@
         // question was created successfully, now set the metadata
         var metadata_updates = [];
         var metadata = user_meta.metadata;
-        for (var i= 0, l = metadata.length; i < l; i++) {
+        for (var i = 0, l = metadata.length; i < l; i++) {
           metadata_updates.push(
             SumoDB.update_question_metadata(question_id, metadata[i])
           );
@@ -106,6 +113,15 @@
         }
       );
     },
+
+    take_question: function(question_id) {
+      var endpoint = API_V2_BASE + 'question/';
+      endpoint += question_id + '/take/';
+      endpoint += '?format=json'; // TODO bug 1088014
+
+      return request_with_auth(endpoint, 'POST');
+    },
+
     /**
      * Get list of questions for the current user
      */
@@ -148,6 +164,15 @@
       var endpoint = API_V2_BASE + 'question/';
       endpoint += '?product=' + PRODUCT;
       endpoint += '&is_solved=0';
+      endpoint += '&taken_by=null';
+      endpoint += '&format=json'; // TODO bug 1088014
+
+      return request(endpoint, 'GET').then(JSON.parse);
+    },
+
+    get_active_questions: function(username) {
+      var endpoint = API_V2_BASE + 'question/';
+      endpoint += '?involved=' + username;
       endpoint += '&format=json'; // TODO bug 1088014
 
       return request(endpoint, 'GET').then(JSON.parse);
@@ -193,6 +218,22 @@
       // settings is only visible if the user authenticated so, we need
       // to do a request_with_auth here.
       return request_with_auth(endpoint, 'GET').then(JSON.parse);
+    },
+
+    /**
+     * Submits a new helpful vote for the specified answer.
+     * @param {string} answer_id - The answer id to receive the helpful vote.
+     */
+    submit_vote: function(answer_id) {
+      var endpoint = API_V2_BASE + 'answer/';
+      endpoint += answer_id + '/';
+      endpoint += 'helpful/';
+      endpoint += '?format=json'; // TODO bug 1088014
+
+      return request_with_auth(endpoint, 'POST')
+        .then(JSON.parse, function(error) {
+          return error;
+        });
     },
 
     update_user_settings: function(user, setting) {
@@ -245,6 +286,30 @@
           // metadata item did not already exist, save to set
           return request_with_auth(set_metadata, 'POST', metadata)
           .then(JSON.parse);
+        }
+      });
+    },
+
+    get_suggestions: function(query, callback) {
+      var endpoint = API_V2_BASE + 'search/suggest/';
+      endpoint += '?q=' + query;
+      endpoint += '&max_questions=3&max_documents=3';
+      endpoint += '&locale=' + navigator.language;
+      endpoint += '&format=json';
+
+      var current_request = request(endpoint, 'GET');
+      var request_sequence = sequence_id++;
+      in_progress_requests[request_sequence] = last_request;
+      current_request.then(function(response) {
+        for (var i in in_progress_requests) {
+          if (i < request_sequence) {
+            in_progress_requests[i].abort();
+            delete in_progress_requests[i];
+          }
+        }
+        if (in_progress_requests[request_sequence]) {
+          callback(JSON.parse(response));
+          delete in_progress_requests[request_sequence];
         }
       });
     }
