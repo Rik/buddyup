@@ -14,17 +14,38 @@
   var question_object;
   var solution_id;
 
+  var TOPICS = {
+    '': 'Choose a topic',
+    'email': 'Email',
+    'clock': 'Clock/Alarm',
+    'camera': 'Camera/Gallery/Video',
+    'audio': 'Audio/Music/RadioFM',
+    'performance': 'Performance',
+    'radios': 'Celular Data/WiFi/Bluetooth',
+    'sms': 'SMS/MMS',
+    'calls': 'Calling&Contacts',
+    'browser': 'Browser/Download',
+    'storage': 'Storage/SD card',
+    'geolocation': 'HERE Maps/GPS',
+    'keyboard': 'Keyboard',
+    'system-updates': 'System Updates',
+    'language': 'Language',
+    'marketplace': 'Marketplace/Apps Install',
+    'other': 'Other'
+  };
+  var TOPIC_PREFIX = 'topic:';
+
   function handle_event(evt) {
     var elem = evt.target;
 
     var answer_id = null;
-    var node = elem.parentNode;
+    var node = elem.parentElement;
     while (node) {
       if (node.dataset.id) {
         answer_id = node.dataset.id;
         node = null;
       } else {
-        node = node.parentNode;
+        node = node.parentElement;
       }
     }
 
@@ -102,12 +123,31 @@
         break;
       }
     }
+
+    var selected_topic = question_object.tags.find(function(tag) {
+      return tag.startsWith(TOPIC_PREFIX);
+    });
+    if (selected_topic) {
+      selected_topic = selected_topic.replace(TOPIC_PREFIX, '');
+    }
+
     var html = nunjucks.render('thread_header.html', {
       date_posted: date_posted,
       handset_type: handset_type,
-      author: author
+      author: author,
+      topics: TOPICS,
+      selected_topic: selected_topic
     });
     question_thread.insertAdjacentHTML('afterbegin', html);
+
+    var topic_chooser = document.getElementById('topic_chooser');
+    topic_chooser.addEventListener('change', function(evt) {
+      var topic = evt.target.value;
+      if (topic == selected_topic) {
+        return;
+      }
+      SumoDB.set_topic_for_question(topic, question);
+    });
   }
 
   function submit_comment(evt) {

@@ -122,6 +122,12 @@
       return Promise.all([vote_promise, solved_promise]);
     },
 
+    set_topic_for_question: function(topic, question_id) {
+      console.log(topic, question_id);
+      // delete all the tags starting with topic:
+      // save the new one
+    },
+
     /**
      * Get list of questions for the current user
      */
@@ -141,7 +147,9 @@
       endpoint += '?format=json'; // TODO bug 1088014
 
       return request(endpoint, 'GET').then(function(response) {
-        return JSON.parse(response);
+        var resp = JSON.parse(response);
+        resp.tags = ['foo', 'bar', 'topic:email'];
+        return resp;
       });
     },
 
